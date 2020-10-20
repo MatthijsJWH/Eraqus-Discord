@@ -21,6 +21,7 @@ with open('db/db.json') as f:
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 @bot.command(name='add', help='Add new subscriber list')
+@commands.has_guild_permissions(administrator=True)
 async def add_list(ctx, tag_name):
     if tag_name in data:
         embed = Embed(
@@ -42,6 +43,7 @@ async def add_list(ctx, tag_name):
     await ctx.send(embed=embed)
 
 @bot.command(name='remove')
+@commands.has_guild_permissions(administrator=True)
 async def remove_list(ctx, tag):
     if tag in data:
         data.pop(tag)
@@ -62,6 +64,24 @@ async def remove_list(ctx, tag):
     )
     await ctx.send(embed=embed)
 
+@add_list.error
+@remove_list.error
+async def permission_error(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        embed = Embed(
+            title = '❌ Command denied!',
+            color = Color.red(),
+            description = 'You do not have the correct permissions to execute this command!'
+        )
+        await ctx.send(embed=embed)
+        return
+
+    embed = Embed(
+        title = '❌ An error ocurred!',
+        color = Color.red(),
+        description = 'An unknown error occured, try again later.'
+    )
+    await ctx.send(embed=embed)
 
 @bot.command(name='sub')
 async def sub(ctx, tag):
